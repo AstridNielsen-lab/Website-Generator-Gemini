@@ -1,6 +1,7 @@
 import React from 'react';
 import { Moon, Sun, Code2 } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
+import UserMenu from './UserMenu';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -23,14 +24,7 @@ export default function Header({ isDarkMode, onThemeToggle }: HeaderProps) {
       </div>
       
       <div className="flex items-center space-x-4">
-        <a
-          href={`https://wa.me/${siteConfig.contact.whatsapp}`}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="text-sm text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400"
-        >
-          Contact
-        </a>
+        <UserMenu />
         <button
           onClick={onThemeToggle}
           className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

@@ -1,12 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Message } from '../../types';
 import { sendMessageToGemini } from '../../utils/api';
-import { parseCodeBlock } from '../../utils/fileParser';
+import { handleGeneratedCode } from '../../utils/codeHandler';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
 interface ChatProps {
-  onCodeGenerated: (code: string) => void;
+  onCodeGenerated: (message: string, response: string, code: string) => void;
 }
 
 export default function Chat({ onCodeGenerated }: ChatProps) {
@@ -38,15 +38,9 @@ export default function Chat({ onCodeGenerated }: ChatProps) {
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       
-      // Parse code blocks from the response
-      const parsedFiles = parseCodeBlock(aiResponse);
-      if (parsedFiles.length > 0) {
-        // Combine all file contents with proper code block formatting
-        const formattedCode = parsedFiles.map(file => (
-          `// ${file.path}\n\`\`\`${file.language}\n${file.content}\n\`\`\``
-        )).join('\n\n');
-        
-        onCodeGenerated(formattedCode);
+      // Handle code blocks in the response
+      if (aiResponse.includes('```')) {
+        onCodeGenerated(userMessage, aiResponse, aiResponse);
       }
     } catch (error) {
       console.error('Error:', error);
