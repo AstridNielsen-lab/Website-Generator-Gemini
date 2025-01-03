@@ -13,6 +13,18 @@ export interface ChatResponse {
   }[];
 }
 
+export interface ProjectFile {
+  name: string;
+  type: 'file';
+  path: string;
+}
+
+export interface ProjectFolder {
+  name: string;
+  type: 'folder';
+  children?: (ProjectFolder | ProjectFile)[];
+}
+
 export interface Project {
   id: string;
   name: string;
@@ -20,11 +32,6 @@ export interface Project {
   files: ProjectFile[];
   dependencies: Record<string, string>;
   devDependencies: Record<string, string>;
-}
-
-export interface ProjectFile {
-  path: string;
-  content: string;
 }
 
 export interface DeploymentConfig {
