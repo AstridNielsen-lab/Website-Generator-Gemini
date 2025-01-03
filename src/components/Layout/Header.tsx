@@ -1,7 +1,6 @@
 import React from 'react';
 import { Moon, Sun, Code2 } from 'lucide-react';
 import { siteConfig } from '../../config/siteConfig';
-import UserMenu from './UserMenu';
 
 interface HeaderProps {
   isDarkMode: boolean;
@@ -23,16 +22,13 @@ export default function Header({ isDarkMode, onThemeToggle }: HeaderProps) {
         </div>
       </div>
       
-      <div className="flex items-center space-x-4">
-        <UserMenu />
-        <button
-          onClick={onThemeToggle}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-          aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
-      </div>
+      <button
+        onClick={onThemeToggle}
+        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+        aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
     </header>
   );
 }

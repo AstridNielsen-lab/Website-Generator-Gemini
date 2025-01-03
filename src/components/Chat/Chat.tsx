@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Message } from '../../types';
 import { sendMessageToGemini } from '../../utils/api';
-import { handleGeneratedCode } from '../../utils/codeHandler';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
