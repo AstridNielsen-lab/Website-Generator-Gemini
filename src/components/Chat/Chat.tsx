@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import type { Message } from '../../types';
 import { sendMessageToGemini } from '../../utils/api';
+import { parseCodeBlock } from '../../utils/fileParser';
 import ChatMessage from './ChatMessage';
 import ChatInput from './ChatInput';
 
@@ -37,11 +38,15 @@ export default function Chat({ onCodeGenerated }: ChatProps) {
       
       setMessages(prev => [...prev, { role: 'assistant', content: aiResponse }]);
       
-      if (aiResponse.includes('```')) {
-        const codeMatch = aiResponse.match(/```(?:html|css|javascript)?\n([\s\S]*?)```/);
-        if (codeMatch) {
-          onCodeGenerated(codeMatch[1]);
-        }
+      // Parse code blocks from the response
+      const parsedFiles = parseCodeBlock(aiResponse);
+      if (parsedFiles.length > 0) {
+        // Combine all file contents with proper code block formatting
+        const formattedCode = parsedFiles.map(file => (
+          `// ${file.path}\n\`\`\`${file.language}\n${file.content}\n\`\`\``
+        )).join('\n\n');
+        
+        onCodeGenerated(formattedCode);
       }
     } catch (error) {
       console.error('Error:', error);

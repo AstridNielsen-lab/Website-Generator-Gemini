@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { parseCodeBlock } from '../../utils/fileParser';
+import { addFileToProject } from '../../utils/projectStructure';
 import EditorToolbar from './EditorToolbar';
 import CodePanel from './CodePanel';
 import PreviewPanel from './PreviewPanel';
@@ -6,7 +8,7 @@ import ViewControls from './ViewControls';
 import ProjectStructure from './ProjectStructure';
 import FileEditor from './FileEditor';
 import ResizablePanel from './ResizablePanel';
-import { generateProjectStructure } from '../../utils/projectGenerator';
+import ExpandableSection from './ExpandableSection';
 import type { ProjectFolder } from '../../types';
 
 interface CodeEditorProps {
@@ -17,28 +19,29 @@ interface CodeEditorProps {
 export default function CodeEditor({ code, onReset }: CodeEditorProps) {
   const [view, setView] = useState<'split' | 'code' | 'preview'>('split');
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [projectStructure, setProjectStructure] = useState<ProjectFolder | null>(null);
+  const [projectStructure, setProjectStructure] = useState<ProjectFolder>({
+    name: 'project',
+    type: 'folder',
+    children: []
+  });
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
 
-  const handleGenerateStructure = () => {
-    const structure = generateProjectStructure(code);
-    setProjectStructure(structure);
-    
-    // Initialize file contents
-    const contents: Record<string, string> = {};
-    const traverseStructure = (folder: ProjectFolder) => {
-      folder.children?.forEach(item => {
-        if (item.type === 'file') {
-          contents[item.path] = '// Edit this file\n';
-        } else {
-          traverseStructure(item);
-        }
+  useEffect(() => {
+    if (code) {
+      const parsedFiles = parseCodeBlock(code);
+      let updatedStructure = { ...projectStructure };
+      const newFileContents: Record<string, string> = {};
+      
+      parsedFiles.forEach(file => {
+        updatedStructure = addFileToProject(updatedStructure, file);
+        newFileContents[file.path] = file.content;
       });
-    };
-    traverseStructure(structure);
-    setFileContents(contents);
-  };
+      
+      setProjectStructure(updatedStructure);
+      setFileContents(newFileContents);
+    }
+  }, [code]);
 
   const handleFileSelect = (path: string) => {
     setSelectedFile(path);
@@ -54,9 +57,9 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-800">
       <EditorToolbar
-        title="Generator Website"
+        title="Generated Code"
         onReset={onReset}
-        onGenerateStructure={handleGenerateStructure}
+        onGenerateStructure={() => {}}
       />
       <ViewControls
         view={view}
@@ -65,42 +68,42 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
         onDeviceChange={setDevice}
       />
       <div className="flex-1 flex overflow-hidden">
-        {projectStructure && (
-          <ResizablePanel defaultSize={240} minSize={200} maxSize={400} className="border-r dark:border-gray-700">
-            <div className="h-full overflow-y-auto scrollbar-thin p-2">
+        <ResizablePanel defaultSize={240} minSize={200} maxSize={400} className="border-r dark:border-gray-700">
+          <ExpandableSection title="Project Structure" defaultExpanded={true}>
+            <div className="overflow-y-auto scrollbar-thin max-h-[calc(100vh-300px)]">
               <ProjectStructure 
-                structure={projectStructure} 
+                structure={projectStructure}
                 onSelect={handleFileSelect}
               />
             </div>
-          </ResizablePanel>
-        )}
+          </ExpandableSection>
+        </ResizablePanel>
+        
         <div className="flex-1 flex">
           {selectedFile ? (
-            <ResizablePanel defaultSize={500} minSize={300} maxSize={1000} className="border-r dark:border-gray-700">
+            <div className="flex-1">
               <FileEditor
                 path={selectedFile}
                 content={fileContents[selectedFile] || ''}
                 onSave={handleFileSave}
               />
-            </ResizablePanel>
-          ) : (
-            (view === 'split' || view === 'code') && (
-              <ResizablePanel 
-                defaultSize={view === 'split' ? window.innerWidth / 3 : window.innerWidth} 
-                className="overflow-auto scrollbar-thin"
-              >
-                <CodePanel code={code} />
-              </ResizablePanel>
-            )
-          )}
-          {(view === 'split' || view === 'preview') && (
-            <div className="flex-1 overflow-auto scrollbar-thin">
-              <PreviewPanel
-                code={code}
-                device={device}
-              />
             </div>
+          ) : (
+            <>
+              {(view === 'split' || view === 'code') && (
+                <div className={`${view === 'split' ? 'w-1/2' : 'w-full'}`}>
+                  <CodePanel code={code} />
+                </div>
+              )}
+              {(view === 'split' || view === 'preview') && (
+                <div className={`${view === 'split' ? 'w-1/2' : 'w-full'}`}>
+                  <PreviewPanel
+                    code={fileContents['/index.html'] || code}
+                    device={device}
+                  />
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

@@ -1,7 +1,9 @@
+import type { ChatResponse } from '../types';
+
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
 const API_KEY = "AIzaSyC9_tWhLz-XE-dS_b_GaNFm3jqnrei7TBY";
 
-export async function sendMessageToGemini(message: string) {
+export async function sendMessageToGemini(message: string): Promise<ChatResponse> {
   try {
     const response = await fetch(`${API_URL}?key=${API_KEY}`, {
       method: 'POST',
@@ -13,7 +15,11 @@ export async function sendMessageToGemini(message: string) {
           parts: [{
             text: message
           }]
-        }]
+        }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 8192
+        }
       })
     });
 
