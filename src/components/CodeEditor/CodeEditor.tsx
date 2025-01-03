@@ -1,8 +1,8 @@
-import React from 'react';
-import SyntaxHighlighter from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/hljs';
-import JSZip from 'jszip';
+import React, { useState } from 'react';
 import EditorToolbar from './EditorToolbar';
+import CodePanel from './CodePanel';
+import PreviewPanel from './PreviewPanel';
+import ViewControls from './ViewControls';
 
 interface CodeEditorProps {
   code: string;
@@ -10,56 +10,35 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ code, onReset }: CodeEditorProps) {
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      alert('Code copied to clipboard!');
-    } catch (err) {
-      console.error('Failed to copy code:', err);
-    }
-  };
-
-  const handleDownload = async () => {
-    const zip = new JSZip();
-    zip.file('index.html', code);
-    
-    try {
-      const content = await zip.generateAsync({ type: 'blob' });
-      const url = window.URL.createObjectURL(content);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'website.zip';
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
-    } catch (err) {
-      console.error('Failed to create zip:', err);
-    }
-  };
+  const [view, setView] = useState<'split' | 'code' | 'preview'>('split');
+  const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
 
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-800">
       <EditorToolbar
-        onCopy={handleCopy}
-        onDownload={handleDownload}
+        title="Generator Website"
         onReset={onReset}
       />
-      <div className="flex-1 overflow-auto">
-        <SyntaxHighlighter
-          language="html"
-          style={tomorrow}
-          customStyle={{
-            margin: 0,
-            height: '100%',
-            padding: '1rem',
-            fontSize: '0.9rem',
-            backgroundColor: 'transparent',
-          }}
-          showLineNumbers
-        >
-          {code}
-        </SyntaxHighlighter>
+      <ViewControls
+        view={view}
+        device={device}
+        onViewChange={setView}
+        onDeviceChange={setDevice}
+      />
+      <div className="flex-1 flex overflow-hidden">
+        {(view === 'split' || view === 'code') && (
+          <CodePanel 
+            code={code}
+            className={view === 'split' ? 'w-1/2' : 'w-full'}
+          />
+        )}
+        {(view === 'split' || view === 'preview') && (
+          <PreviewPanel
+            code={code}
+            device={device}
+            className={view === 'split' ? 'w-1/2' : 'w-full'}
+          />
+        )}
       </div>
     </div>
   );
