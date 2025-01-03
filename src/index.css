@@ -6,16 +6,23 @@
   body {
     @apply antialiased;
   }
+}
 
-  ::-webkit-scrollbar {
-    @apply w-2;
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
   }
-
-  ::-webkit-scrollbar-track {
+  
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  .scrollbar-thin::-webkit-scrollbar-track {
     @apply bg-transparent;
   }
-
-  ::-webkit-scrollbar-thumb {
+  
+  .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-gray-300 dark:bg-gray-600 rounded-full;
   }
 }

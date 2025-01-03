@@ -29,14 +29,14 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
         {(view === 'split' || view === 'code') && (
           <CodePanel 
             code={code}
-            className={view === 'split' ? 'w-1/2' : 'w-full'}
+            className={`${view === 'split' ? 'w-1/2' : 'w-full'} overflow-auto scrollbar-thin`}
           />
         )}
         {(view === 'split' || view === 'preview') && (
           <PreviewPanel
             code={code}
             device={device}
-            className={view === 'split' ? 'w-1/2' : 'w-full'}
+            className={`${view === 'split' ? 'w-1/2' : 'w-full'} overflow-auto scrollbar-thin`}
           />
         )}
       </div>

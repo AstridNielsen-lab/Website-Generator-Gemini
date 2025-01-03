@@ -56,7 +56,7 @@ export default function Chat({ onCodeGenerated }: ChatProps) {
 
   return (
     <div className="flex flex-col h-full bg-gray-50 dark:bg-gray-800">
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin">
         {messages.map((message, index) => (
           <ChatMessage key={index} message={message} />
         ))}
