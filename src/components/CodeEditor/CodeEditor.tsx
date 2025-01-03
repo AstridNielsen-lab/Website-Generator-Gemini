@@ -17,6 +17,7 @@ interface CodeEditorProps {
 
 export default function CodeEditor({ code, onReset }: CodeEditorProps) {
   const [view, setView] = useState<'split' | 'code' | 'preview'>('split');
+  const [previousView, setPreviousView] = useState<'split' | 'code' | 'preview'>('split');
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [projectStructure, setProjectStructure] = useState<ProjectFolder>({
     name: 'project',
@@ -25,6 +26,7 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
   });
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
+  const [panelSize, setPanelSize] = useState(240);
 
   useEffect(() => {
     if (code) {
@@ -36,6 +38,8 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
 
   const handleFileSelect = (path: string) => {
     setSelectedFile(path);
+    setPreviousView(view);
+    setView('code');
   };
 
   const handleFileSave = (path: string, content: string) => {
@@ -45,9 +49,15 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
     }));
   };
 
+  const handleBackToOverview = () => {
+    setSelectedFile(null);
+    setView(previousView);
+  };
+
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(code);
+      const contentToCopy = selectedFile ? fileContents[selectedFile] : code;
+      await navigator.clipboard.writeText(contentToCopy);
       alert('Code copied to clipboard!');
     } catch (err) {
       console.error('Failed to copy code:', err);
@@ -86,21 +96,30 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
   return (
     <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-800">
       <EditorToolbar 
-        title="Generated Code" 
-        onReset={onReset}
+        title={selectedFile || "Generated Code"}
+        onReset={selectedFile ? handleBackToOverview : onReset}
         onCopy={handleCopy}
         onDownload={handleDownload}
+        showBackButton={!!selectedFile}
       />
-      <ViewControls
-        view={view}
-        device={device}
-        onViewChange={setView}
-        onDeviceChange={setDevice}
-      />
+      {!selectedFile && (
+        <ViewControls
+          view={view}
+          device={device}
+          onViewChange={setView}
+          onDeviceChange={setDevice}
+        />
+      )}
       <div className="flex-1 flex overflow-hidden">
-        <ResizablePanel defaultSize={240} minSize={200} maxSize={400}>
+        <ResizablePanel 
+          defaultSize={panelSize} 
+          minSize={200} 
+          maxSize={400}
+          onResize={setPanelSize}
+        >
           <ProjectStructure 
             structure={projectStructure}
+            selectedFile={selectedFile}
             onSelect={handleFileSelect}
           />
         </ResizablePanel>
@@ -111,16 +130,17 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
               path={selectedFile}
               content={fileContents[selectedFile] || ''}
               onSave={handleFileSave}
+              onBack={handleBackToOverview}
             />
           ) : (
             <div className="h-full flex">
               {(view === 'split' || view === 'code') && (
-                <div className={`${view === 'split' ? 'w-1/2' : 'w-full'}`}>
+                <div className={`h-full ${view === 'split' ? 'w-1/2' : 'w-full'}`}>
                   <CodePanel code={code} />
                 </div>
               )}
               {(view === 'split' || view === 'preview') && (
-                <div className={`${view === 'split' ? 'w-1/2' : 'w-full'}`}>
+                <div className={`h-full ${view === 'split' ? 'w-1/2' : 'w-full'}`}>
                   <PreviewPanel
                     code={fileContents['/index.html'] || code}
                     device={device}
