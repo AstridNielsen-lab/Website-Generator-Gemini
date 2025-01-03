@@ -7,6 +7,7 @@ interface ResizablePanelProps {
   maxSize?: number;
   direction?: 'horizontal' | 'vertical';
   className?: string;
+  onResize?: (size: number) => void;
 }
 
 export default function ResizablePanel({
@@ -16,6 +17,7 @@ export default function ResizablePanel({
   maxSize = 800,
   direction = 'horizontal',
   className = '',
+  onResize
 }: ResizablePanelProps) {
   const [size, setSize] = useState(defaultSize);
   const [isResizing, setIsResizing] = useState(false);
@@ -29,9 +31,12 @@ export default function ResizablePanel({
 
     const handleMouseMove = (e: MouseEvent) => {
       const currentPos = direction === 'horizontal' ? e.clientX : e.clientY;
-      const diff = currentPos - startPos;
+      const diff = direction === 'horizontal' 
+        ? currentPos - startPos 
+        : startPos - currentPos;
       const newSize = Math.min(Math.max(startSize + diff, minSize), maxSize);
       setSize(newSize);
+      onResize?.(newSize);
     };
 
     const handleMouseUp = () => {
@@ -42,7 +47,7 @@ export default function ResizablePanel({
 
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
-  }, [size, minSize, maxSize, direction]);
+  }, [size, minSize, maxSize, direction, onResize]);
 
   return (
     <div
@@ -57,7 +62,7 @@ export default function ResizablePanel({
         className={`absolute ${
           direction === 'horizontal'
             ? 'right-0 top-0 w-1 h-full cursor-col-resize hover:bg-blue-500'
-            : 'bottom-0 left-0 h-1 w-full cursor-row-resize hover:bg-blue-500'
+            : 'top-0 left-0 h-1 w-full cursor-row-resize hover:bg-blue-500'
         } opacity-0 hover:opacity-100 transition-opacity`}
         onMouseDown={startResizing}
       />

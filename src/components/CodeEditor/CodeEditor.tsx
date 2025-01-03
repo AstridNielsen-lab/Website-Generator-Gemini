@@ -59,14 +59,11 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
     try {
       const zip = new JSZip();
       
-      // Add all files to the zip
       Object.entries(fileContents).forEach(([path, content]) => {
-        // Remove leading slash and normalize path
         const normalizedPath = path.replace(/^\//, '');
         zip.file(normalizedPath, content);
       });
       
-      // If no files in structure, add the raw code as index.html
       if (Object.keys(fileContents).length === 0 && code) {
         zip.file('index.html', code);
       }
@@ -108,7 +105,7 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
           />
         </ResizablePanel>
         
-        <div className="flex-1 flex">
+        <div className="flex-1">
           {selectedFile ? (
             <FileEditor
               path={selectedFile}
@@ -116,7 +113,7 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
               onSave={handleFileSave}
             />
           ) : (
-            <>
+            <div className="h-full flex">
               {(view === 'split' || view === 'code') && (
                 <div className={`${view === 'split' ? 'w-1/2' : 'w-full'}`}>
                   <CodePanel code={code} />
@@ -130,9 +127,13 @@ export default function CodeEditor({ code, onReset }: CodeEditorProps) {
                   />
                 </div>
               )}
-            </>
+            </div>
           )}
         </div>
+      </div>
+      
+      <div className="px-4 py-1 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-900 border-t dark:border-gray-700">
+        VITE v5.4.8
       </div>
     </div>
   );
